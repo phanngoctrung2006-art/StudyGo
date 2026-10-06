@@ -1,0 +1,58 @@
+services:
+  # -------------------------------------------------------------
+  # 1. Database Service: MySQL 8.0
+  # -------------------------------------------------------------
+  db:
+    image: mysql:8.0
+    container_name: ktgiuaki-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "123456"
+      MYSQL_DATABASE: "KtGiuaKi"
+    ports:
+      # Ánh xạ ra cổng 3307 trên máy host để tránh xung đột nếu máy đã cài MySQL local cổng 3306
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Tự động nạp cấu trúc bảng và dữ liệu mẫu khi tạo container lần đầu
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p123456"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  # -------------------------------------------------------------
+  # 2. Web Application Service: Tomcat 10.1 (Servlet + JSP)
+  # -------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ktgiuaki-web
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: "db"
+      DB_PORT: "3306"
+      DB_NAME: "KtGiuaKi"
+      DB_USER: "root"
+      DB_PASSWORD: "123456"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+# ---------------------------------------------------------------
+# Volumes & Networks
+# ---------------------------------------------------------------
+volumes:
+  mysql_data:
+
+networks:
+  app-network:
+    driver: bridge

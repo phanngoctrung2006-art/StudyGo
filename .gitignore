@@ -1,0 +1,11 @@
+.project
+.classpath
+.settings
+.idea
+HELP.md
+.factorypath
+mvnw
+mvnw.cmd
+.mvn
+.env
+.gitattributes

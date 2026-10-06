@@ -1,0 +1,10 @@
+<sitemesh>
+    <!-- Loại trừ Servlet đọc ảnh -->
+    <mapping path="/image*" exclude="true" />
+
+    <!-- Decorator cho Admin -->
+    <mapping path="/admin/*" decorator="admin.jsp" />
+
+    <!-- Ánh xạ các trang người dùng thông thường qua layout web.jsp -->
+    <mapping path="/*" decorator="web.jsp" />
+</sitemesh>
