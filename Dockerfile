@@ -5,36 +5,49 @@ FROM maven:3.9.9-eclipse-temurin-21 AS build
 
 WORKDIR /app
 
-# Copy pom.xml trước để cache maven dependencies
+# Copy pom.xml trước để cache dependencies
 COPY pom.xml .
 RUN mvn dependency:go-offline -B || true
 
 # Copy toàn bộ mã nguồn
 COPY src ./src
 
-# Biên dịch và đóng gói ứng dụng thành file WAR
+# Đóng gói file WAR (bỏ qua tests)
 RUN mvn clean package -DskipTests -B
 
 # ==============================================================================
-# Stage 2: Runtime Environment with Apache Tomcat 10.1 (Jakarta EE 10 / Servlet 6.0)
+# Stage 2: Runtime Environment with Tomcat 10.1 + Tích hợp MySQL Server
 # ==============================================================================
 FROM tomcat:10.1-jdk21-temurin
 
 LABEL maintainer="Phan Ngoc Trung - 24110366"
-LABEL description="Docker container for Java Web Servlet & JSP project (KTGiuaKi)"
+LABEL description="All-in-One Container: Java Web (Tomcat 10.1) & MySQL Database"
 
-# Xóa các ứng dụng mẫu mặc định trong webapps của Tomcat
+# Cài đặt MySQL Server / MariaDB Server bên trong container
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    default-mysql-server \
+    default-mysql-client && \
+    rm -rf /var/lib/apt/lists/*
+
+# Dọn dẹp các webapps mặc định của Tomcat
 RUN rm -rf /usr/local/tomcat/webapps/*
 
-# Copy file WAR đã build từ Stage 1
-# 1. Triển khai dưới dạng ROOT.war để truy cập trực tiếp tại: http://localhost:8080/
+# Copy file WAR đã build vào thư mục webapps
+# ROOT.war để truy cập trực tiếp tại http://localhost:8080/
 COPY --from=build /app/target/KTGiuaKi-1.1.war /usr/local/tomcat/webapps/ROOT.war
-
-# 2. Đồng thời copy thành KTGiuaKi.war để truy cập tại: http://localhost:8080/KTGiuaKi/
+# KTGiuaKi.war để truy cập tại http://localhost:8080/KTGiuaKi/
 COPY --from=build /app/target/KTGiuaKi-1.1.war /usr/local/tomcat/webapps/KTGiuaKi.war
 
-# Mở cổng mặc định của Tomcat
-EXPOSE 8080
+# Copy file SQL khởi tạo CSDL và script entrypoint
+COPY docker/mysql/init.sql /app/init.sql
+COPY docker/entrypoint.sh /entrypoint.sh
 
-# Chạy Tomcat ở chế độ foreground
-CMD ["catalina.sh", "run"]
+# Chuẩn hóa xuống dòng LF (tránh lỗi CRLF trên Windows) và cấp quyền chạy
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
+
+# Mở cổng 8080 (Web Tomcat) và 3306 (MySQL Server)
+EXPOSE 8080 3306
+
+# Script tự động khởi động MySQL, nạp dữ liệu KtGiuaKi và chạy Tomcat
+ENTRYPOINT ["/entrypoint.sh"]

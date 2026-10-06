@@ -30,7 +30,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.web
     container_name: ktgiuaki-web
     restart: unless-stopped
     ports:
