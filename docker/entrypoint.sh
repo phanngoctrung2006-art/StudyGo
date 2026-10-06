@@ -1,30 +1,30 @@
 #!/bin/bash
-set -e
+set -x
 
 echo "=== [1/3] Khoi dong MySQL Service ==="
-service mariadb start 2>/dev/null || service mysql start 2>/dev/null
+mkdir -p /var/run/mysqld /var/lib/mysql
+chown -R mysql:mysql /var/run/mysqld /var/lib/mysql
 
-# Đợi MySQL socket sẵn sàng
+if [ ! -d /var/lib/mysql/mysql ]; then
+    mysql_install_db --user=mysql --datadir=/var/lib/mysql
+    # Nếu là MySQL chính hãng: mysqld --initialize-insecure --user=mysql
+fi
+
+mysqld_safe --user=mysql > /tmp/mysql.log 2>&1 &
+
 for i in $(seq 1 30); do
-    if mysqladmin ping --silent 2>/dev/null || mysql -e "SELECT 1" 2>/dev/null; then
-        break
-    fi
+    mysqladmin ping --silent && break
     sleep 1
 done
 
-echo "=== [2/3] Cau hinh tai khoan & Database ==="
-# Cấu hình mật khẩu root 123456 và phân quyền cho kết nối nội bộ lẫn bên ngoài
-mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '123456';" 2>/dev/null || true
-mysql -u root -p123456 -e "CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY '123456'; GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;" 2>/dev/null || true
-
-# Nạp dữ liệu init.sql nếu database hoặc bảng users chưa tồn tại
-if ! mysql -u root -p123456 -e "USE KtGiuaKi; SELECT 1 FROM users LIMIT 1;" 2>/dev/null; then
-    echo "Dang import du lieu tu init.sql vao database KtGiuaKi..."
-    mysql -u root -p123456 < /app/init.sql
-    echo "Import du lieu thanh cong!"
-else
-    echo "Database KtGiuaKi da ton tai san."
+if ! mysqladmin ping --silent; then
+    echo "MySQL KHONG khoi dong duoc. Log:"
+    cat /tmp/mysql.log
+    exit 1
 fi
 
-echo "=== [3/3] Khoi dong Apache Tomcat 10.1 ==="
+echo "=== [2/3] Import du lieu ==="
+mysql -u root < /app/init.sql
+
+echo "=== [3/3] Khoi dong Tomcat ==="
 exec catalina.sh run
