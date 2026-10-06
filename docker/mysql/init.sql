@@ -1,63 +1,58 @@
-﻿-- MySQL dump 10.13  Distrib 8.0.46, for Win64 (x86_64)
---
--- Host: localhost    Database: KtGiuaKi
--- ------------------------------------------------------
--- Server version	8.0.46
+-- ==============================================================================
+-- HỆ THỐNG CƠ SỞ DỮ LIỆU: KtGiuaKi (CHUẨN CHÍNH XÁC HOA / THƯỜNG CHO LINUX & AIVEN)
+-- Môn: Lập Trình Web / Đề số: 04
+-- Sinh viên: Phan Ngọc Trung - MSSV: 24110366
+-- ==============================================================================
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8mb4 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
---
--- Current Database: `KtGiuaKi`
---
-
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `KtGiuaKi` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-
+CREATE DATABASE IF NOT EXISTS `KtGiuaKi` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `KtGiuaKi`;
 
---
--- Table structure for table `category`
---
+SET FOREIGN_KEY_CHECKS = 0;
 
-DROP TABLE IF EXISTS `category`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `category` (
+-- Bảng: Users
+DROP TABLE IF EXISTS `Users`;
+CREATE TABLE `Users` (
+  `Username` varchar(50) NOT NULL,
+  `Password` varchar(50) NOT NULL,
+  `Phone` varchar(15) DEFAULT NULL,
+  `Fullname` varchar(50) DEFAULT NULL,
+  `Email` varchar(150) DEFAULT NULL,
+  `Admin` bit(1) DEFAULT b'0',
+  `Active` bit(1) DEFAULT b'1',
+  `Images` varchar(500) DEFAULT 'default.png',
+  PRIMARY KEY (`Username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Bảng: Category
+DROP TABLE IF EXISTS `Category`;
+CREATE TABLE `Category` (
   `CategoryId` int NOT NULL AUTO_INCREMENT,
-  `Categoryname` varchar(100) DEFAULT NULL,
+  `Categoryname` varchar(100) NOT NULL,
   `Categorycode` varchar(100) DEFAULT NULL,
   `Images` varchar(500) DEFAULT NULL,
   `Status` bit(1) DEFAULT b'1',
   PRIMARY KEY (`CategoryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `category`
---
+-- Bảng: Videos
+DROP TABLE IF EXISTS `Videos`;
+CREATE TABLE `Videos` (
+  `VideoId` varchar(50) NOT NULL,
+  `Title` varchar(200) NOT NULL,
+  `Poster` varchar(500) DEFAULT NULL,
+  `Views` int DEFAULT '0',
+  `Description` varchar(500) DEFAULT NULL,
+  `Active` bit(1) DEFAULT b'1',
+  `CategoryId` int DEFAULT NULL,
+  `Price` decimal(12,2) DEFAULT '150000.00',
+  PRIMARY KEY (`VideoId`),
+  KEY `FK_Videos_Category` (`CategoryId`),
+  CONSTRAINT `FK_Videos_Category` FOREIGN KEY (`CategoryId`) REFERENCES `Category` (`CategoryId`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-LOCK TABLES `category` WRITE;
-/*!40000 ALTER TABLE `category` DISABLE KEYS */;
-INSERT INTO `category` VALUES (1,'Láº­p TrÃ¬nh Java','JAVA','java_banner.png',_binary ''),(2,'Láº­p TrÃ¬nh Web','WEB','web_banner.png',_binary ''),(3,'CÆ¡ Sá»Ÿ Dá»¯ Liá»‡u','DATABASE','db_banner.png',_binary '');
-/*!40000 ALTER TABLE `category` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `favorites`
---
-
-DROP TABLE IF EXISTS `favorites`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `favorites` (
+-- Bảng: Favorites
+DROP TABLE IF EXISTS `Favorites`;
+CREATE TABLE `Favorites` (
   `FavoriteId` int NOT NULL AUTO_INCREMENT,
   `LikedDate` date DEFAULT NULL,
   `VideoId` varchar(50) DEFAULT NULL,
@@ -65,60 +60,28 @@ CREATE TABLE `favorites` (
   PRIMARY KEY (`FavoriteId`),
   KEY `FK_Favorites_Videos` (`VideoId`),
   KEY `FK_Favorites_Users` (`Username`),
-  CONSTRAINT `FK_Favorites_Users` FOREIGN KEY (`Username`) REFERENCES `users` (`Username`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `FK_Favorites_Videos` FOREIGN KEY (`VideoId`) REFERENCES `videos` (`VideoId`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  CONSTRAINT `FK_Favorites_Users` FOREIGN KEY (`Username`) REFERENCES `Users` (`Username`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_Favorites_Videos` FOREIGN KEY (`VideoId`) REFERENCES `Videos` (`VideoId`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `favorites`
---
+-- Bảng: Shares
+DROP TABLE IF EXISTS `Shares`;
+CREATE TABLE `Shares` (
+  `ShareId` int NOT NULL AUTO_INCREMENT,
+  `Emails` varchar(50) DEFAULT NULL,
+  `SharedDate` date DEFAULT NULL,
+  `Username` varchar(50) DEFAULT NULL,
+  `VideoId` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`ShareId`),
+  KEY `FK_Shares_Users` (`Username`),
+  KEY `FK_Shares_Videos` (`VideoId`),
+  CONSTRAINT `FK_Shares_Users` FOREIGN KEY (`Username`) REFERENCES `Users` (`Username`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_Shares_Videos` FOREIGN KEY (`VideoId`) REFERENCES `Videos` (`VideoId`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-LOCK TABLES `favorites` WRITE;
-/*!40000 ALTER TABLE `favorites` DISABLE KEYS */;
-INSERT INTO `favorites` VALUES (1,'2026-09-10','VID01','user01'),(2,'2026-09-12','VID01','user02'),(3,'2026-09-15','VID01','user03'),(4,'2026-09-18','VID02','user01'),(5,'2026-09-20','VID03','user04');
-/*!40000 ALTER TABLE `favorites` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `orderdetails`
---
-
-DROP TABLE IF EXISTS `orderdetails`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `orderdetails` (
-  `OrderDetailId` int NOT NULL AUTO_INCREMENT,
-  `OrderId` int NOT NULL,
-  `VideoId` varchar(50) NOT NULL,
-  `Quantity` int NOT NULL,
-  `Price` decimal(12,2) NOT NULL,
-  PRIMARY KEY (`OrderDetailId`),
-  KEY `OrderId` (`OrderId`),
-  KEY `VideoId` (`VideoId`),
-  CONSTRAINT `orderdetails_ibfk_1` FOREIGN KEY (`OrderId`) REFERENCES `orders` (`OrderId`) ON DELETE CASCADE,
-  CONSTRAINT `orderdetails_ibfk_2` FOREIGN KEY (`VideoId`) REFERENCES `videos` (`VideoId`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `orderdetails`
---
-
-LOCK TABLES `orderdetails` WRITE;
-/*!40000 ALTER TABLE `orderdetails` DISABLE KEYS */;
-INSERT INTO `orderdetails` VALUES (1,1,'VID01',2,150000.00),(2,1,'VID05',1,150000.00),(3,2,'VID01',9,150000.00),(4,3,'VID01',2,150000.00);
-/*!40000 ALTER TABLE `orderdetails` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `orders`
---
-
-DROP TABLE IF EXISTS `orders`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `orders` (
+-- Bảng: Orders
+DROP TABLE IF EXISTS `Orders`;
+CREATE TABLE `Orders` (
   `OrderId` int NOT NULL AUTO_INCREMENT,
   `Username` varchar(50) NOT NULL,
   `OrderDate` datetime DEFAULT CURRENT_TIMESTAMP,
@@ -128,123 +91,88 @@ CREATE TABLE `orders` (
   `Note` varchar(500) DEFAULT NULL,
   `TotalAmount` decimal(12,2) NOT NULL,
   `PaymentMethod` varchar(50) DEFAULT 'COD',
-  `Status` varchar(50) DEFAULT 'Pending',
+  `Status` varchar(50) DEFAULT 'Pending (COD)',
   PRIMARY KEY (`OrderId`),
-  KEY `Username` (`Username`),
-  CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`Username`) REFERENCES `users` (`Username`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  KEY `FK_Orders_Users` (`Username`),
+  CONSTRAINT `FK_Orders_Users` FOREIGN KEY (`Username`) REFERENCES `Users` (`Username`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `orders`
---
-
-LOCK TABLES `orders` WRITE;
-/*!40000 ALTER TABLE `orders` DISABLE KEYS */;
-INSERT INTO `orders` VALUES (1,'admin','2026-10-05 09:19:59','Quáº£n Trá»‹ ViÃªn','0901234567','988 Pháº¡m VÄƒn Äá»“ng','giao á»Ÿ quÃ¡n Äƒn káº¿ bÃªn',450000.00,'COD','Pending (COD)'),(2,'admin','2026-10-05 09:22:23','Quáº£n Trá»‹ ViÃªn','0901234567','988 Pháº¡m vÄƒn Ä‘á»“ng','abc',1350000.00,'COD','Pending (COD)'),(3,'trung','2026-10-05 09:33:07','Phan Ngá»c Trung','0343089214','988 Pháº¡m VÄƒn Äá»“ng','bÃªn quÃ¡n cÆ¡m trÆ°a',300000.00,'COD','Pending (COD)');
-/*!40000 ALTER TABLE `orders` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `shares`
---
-
-DROP TABLE IF EXISTS `shares`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `shares` (
-  `ShareId` int NOT NULL AUTO_INCREMENT,
-  `Emails` varchar(50) DEFAULT NULL,
-  `SharedDate` date DEFAULT NULL,
-  `Username` varchar(50) DEFAULT NULL,
-  `VideoId` varchar(50) DEFAULT NULL,
-  PRIMARY KEY (`ShareId`),
-  KEY `FK_Shares_Users` (`Username`),
-  KEY `FK_Shares_Videos` (`VideoId`),
-  CONSTRAINT `FK_Shares_Users` FOREIGN KEY (`Username`) REFERENCES `users` (`Username`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `FK_Shares_Videos` FOREIGN KEY (`VideoId`) REFERENCES `videos` (`VideoId`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `shares`
---
-
-LOCK TABLES `shares` WRITE;
-/*!40000 ALTER TABLE `shares` DISABLE KEYS */;
-INSERT INTO `shares` VALUES (1,'friend1@example.com','2026-09-11','user01','VID01'),(2,'friend2@example.com','2026-09-13','user02','VID01'),(3,'colleague@example.com','2026-09-16','user01','VID02'),(4,'classmate@example.com','2026-09-21','user03','VID03');
-/*!40000 ALTER TABLE `shares` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `users`
---
-
-DROP TABLE IF EXISTS `users`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `users` (
-  `Username` varchar(50) NOT NULL,
-  `Password` varchar(50) DEFAULT NULL,
-  `Phone` varchar(15) DEFAULT NULL,
-  `Fullname` varchar(50) DEFAULT NULL,
-  `Email` varchar(150) DEFAULT NULL,
-  `Admin` bit(1) DEFAULT b'0',
-  `Active` bit(1) DEFAULT b'1',
-  `Images` varchar(500) DEFAULT NULL,
-  PRIMARY KEY (`Username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `users`
---
-
-LOCK TABLES `users` WRITE;
-/*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES ('admin','123456','0901234567','Quáº£n Trá»‹ ViÃªn','admin@example.com',_binary '',_binary '','admin.jpg'),('admin123','123456','0343089214','Phan Ngá»c Trung','phanngocquang257@gmail.com',_binary '\0',_binary '\0','default.png'),('trung','123456','0343089214','Phan Ngá»c Trung','phanngoctrung2006@gmail.com',_binary '\0',_binary '','default.png'),('user01','123456','0912345678','Nguyá»…n VÄƒn A','user01@example.com',_binary '\0',_binary '','avatar1.jpg'),('user02','123456','0923456789','Tráº§n Thá»‹ B','user02@example.com',_binary '\0',_binary '','avatar2.jpg'),('user03','123456','0934567890','LÃª VÄƒn C','user03@example.com',_binary '\0',_binary '','avatar3.jpg'),('user04','123456','0945678904','Pháº¡m Minh Do','user04@example.com',_binary '',_binary '','avatar4.jpg'),('user05','123456','0956789012','HoÃ ng Anh E','user05@example.com',_binary '\0',_binary '','avatar5.jpg'),('user06','123456','0967890123','Äá»— Tháº£o F','user06@example.com',_binary '\0',_binary '','avatar6.jpg');
-/*!40000 ALTER TABLE `users` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `videos`
---
-
-DROP TABLE IF EXISTS `videos`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `videos` (
+-- Bảng: OrderDetails
+DROP TABLE IF EXISTS `OrderDetails`;
+CREATE TABLE `OrderDetails` (
+  `OrderDetailId` int NOT NULL AUTO_INCREMENT,
+  `OrderId` int NOT NULL,
   `VideoId` varchar(50) NOT NULL,
-  `Title` varchar(200) DEFAULT NULL,
-  `Poster` varchar(500) DEFAULT NULL,
-  `Views` int DEFAULT '0',
-  `Description` varchar(500) DEFAULT NULL,
-  `Active` bit(1) DEFAULT b'1',
-  `CategoryId` int DEFAULT NULL,
-  `Price` decimal(12,2) DEFAULT '150000.00',
-  PRIMARY KEY (`VideoId`),
-  KEY `FK_Videos_Category` (`CategoryId`),
-  CONSTRAINT `FK_Videos_Category` FOREIGN KEY (`CategoryId`) REFERENCES `category` (`CategoryId`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  `Quantity` int NOT NULL,
+  `Price` decimal(12,2) NOT NULL,
+  PRIMARY KEY (`OrderDetailId`),
+  KEY `FK_OrderDetails_Orders` (`OrderId`),
+  KEY `FK_OrderDetails_Videos` (`VideoId`),
+  CONSTRAINT `FK_OrderDetails_Orders` FOREIGN KEY (`OrderId`) REFERENCES `Orders` (`OrderId`) ON DELETE CASCADE,
+  CONSTRAINT `FK_OrderDetails_Videos` FOREIGN KEY (`VideoId`) REFERENCES `Videos` (`VideoId`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `videos`
---
+SET FOREIGN_KEY_CHECKS = 1;
 
-LOCK TABLES `videos` WRITE;
-/*!40000 ALTER TABLE `videos` DISABLE KEYS */;
-INSERT INTO `videos` VALUES ('VID01','HÆ°á»›ng dáº«n Servlet vÃ  JSP cÆ¡ báº£n','https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&auto=format&fit=crop&q=60',1515,'Video hÆ°á»›ng dáº«n nháº­p mÃ´n xÃ¢y dá»±ng web vá»›i Java Servlet vÃ  JSP.',_binary '',1,150000.00),('VID02','Káº¿t ná»‘i CSDL MySQL vá»›i JDBC','https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=500&auto=format&fit=crop&q=60',2306,'CÃ¡ch thiáº¿t láº­p káº¿t ná»‘i JDBC vÃ  thao tÃ¡c CRUD trÃªn MySQL.',_binary '',1,150000.00),('VID03','XÃ¢y dá»±ng kiáº¿n trÃºc MVC trong Java Web','https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=500&auto=format&fit=crop&q=60',1852,'Tá»• chá»©c mÃ£ nguá»“n theo mÃ´ hÃ¬nh 3 lá»›p Controller, Service, DAO.',_binary '',1,150000.00),('VID04','Cáº¥u hÃ¬nh SiteMesh Decorator cho JSP','https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500&auto=format&fit=crop&q=60',923,'HÆ°á»›ng dáº«n sá»­ dá»¥ng thÆ° viá»‡n SiteMesh 3 Ä‘á»ƒ trang trÃ­ layout trang web.',_binary '',1,150000.00),('VID05','Thiáº¿t káº¿ giao diá»‡n Web Responsive vá»›i CSS','https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=500&auto=format&fit=crop&q=60',3101,'Táº¡o giao diá»‡n tÆ°Æ¡ng thÃ­ch trÃªn nhiá»u mÃ n hÃ¬nh thiáº¿t bá»‹.',_binary '',2,150000.00),('VID06','Tá»‘i Æ°u hÃ³a truy váº¥n SQL Server vÃ  MySQL','https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=500&auto=format&fit=crop&q=60',1201,'CÃ¡c máº¹o Ä‘Ã¡nh chá»‰ má»¥c Index vÃ  tá»‘i Æ°u hÃ³a cÃ¢u truy váº¥n phá»©c táº¡p.',_binary '',3,150000.00),('VID07','XÃ¢y dá»±ng RESTful API vá»›i Spring Boot','https://images.unsplash.com/photo-1607799279861-4dd421887fb3?w=500&auto=format&fit=crop&q=60',4200,'HÆ°á»›ng dáº«n thiáº¿t káº¿ API chuáº©n RESTful sá»­ dá»¥ng Spring Boot vÃ  Hibernate.',_binary '',1,150000.00),('VID08','Quáº£n lÃ½ Transaction trong Spring Framework','https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=500&auto=format&fit=crop&q=60',1650,'TÃ¬m hiá»ƒu cÆ¡ cháº¿ @Transactional vÃ  quáº£n lÃ½ phiÃªn lÃ m viá»‡c trong Java.',_binary '',1,150000.00),('VID09','Láº­p trÃ¬nh JavaScript ES6 hiá»‡n Ä‘áº¡i','https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?w=500&auto=format&fit=crop&q=60',5100,'CÃ¡c tÃ­nh nÄƒng má»›i trong ES6: Arrow functions, Promises, Async/Await.',_binary '',2,150000.00),('VID10','Frontend cÆ¡ báº£n vá»›i HTML5 vÃ  CSS3','https://images.unsplash.com/photo-1523437113738-bbd3cc89fb19?w=500&auto=format&fit=crop&q=60',2890,'KhÃ³a há»c ná»n táº£ng xÃ¢y dá»±ng cáº¥u trÃºc vÃ  Ä‘á»‹nh dáº¡ng trang web.',_binary '',2,150000.00),('VID11','Thiáº¿t káº¿ chuáº©n hÃ³a cÆ¡ sá»Ÿ dá»¯ liá»‡u (1NF Ä‘áº¿n 3NF)','https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=500&auto=format&fit=crop&q=60',3400,'PhÆ°Æ¡ng phÃ¡p phÃ¢n tÃ­ch vÃ  chuáº©n hÃ³a báº£ng dá»¯ liá»‡u chá»‘ng trÃ¹ng láº·p.',_binary '',3,150000.00),('VID12','Viáº¿t Stored Procedure vÃ  Trigger trong SQL','https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=500&auto=format&fit=crop&q=60',2150,'HÆ°á»›ng dáº«n tá»± Ä‘á»™ng hÃ³a xá»­ lÃ½ logic nghiá»‡p vá»¥ ngay táº¡i táº§ng cÆ¡ sá»Ÿ dá»¯ liá»‡u.',_binary '',3,150000.00);
-/*!40000 ALTER TABLE `videos` ENABLE KEYS */;
-UNLOCK TABLES;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+-- 3.1. Dữ liệu bảng `Users`
+INSERT INTO `Users` (`Username`, `Password`, `Phone`, `Fullname`, `Email`, `Admin`, `Active`, `Images`) VALUES
+('admin', '123456', '0901234567', 'Quản Trị Viên', 'admin@example.com', b'1', b'1', 'admin.jpg'),
+('admin123', '123456', '0343089214', 'Phan Ngọc Trung', 'phanngocquang257@gmail.com', b'0', b'0', 'default.png'),
+('trung', '123456', '0343089214', 'Phan Ngọc Trung', 'phanngoctrung2006@gmail.com', b'0', b'1', 'default.png'),
+('user01', '123456', '0912345678', 'Nguyễn Văn A', 'user01@example.com', b'0', b'1', 'avatar1.jpg'),
+('user02', '123456', '0923456789', 'Trần Thị B', 'user02@example.com', b'0', b'1', 'avatar2.jpg'),
+('user03', '123456', '0934567890', 'Lê Văn C', 'user03@example.com', b'0', b'1', 'avatar3.jpg'),
+('user04', '123456', '0945678904', 'Phạm Minh Do', 'user04@example.com', b'1', b'1', 'avatar4.jpg'),
+('user05', '123456', '0956789012', 'Hoàng Anh E', 'user05@example.com', b'0', b'1', 'avatar5.jpg'),
+('user06', '123456', '0967890123', 'Đỗ Thảo F', 'user06@example.com', b'0', b'1', 'avatar6.jpg');
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+-- 3.2. Dữ liệu bảng `Category`
+INSERT INTO `Category` (`CategoryId`, `Categoryname`, `Categorycode`, `Images`, `Status`) VALUES
+(1, 'Lập Trình Java', 'JAVA', 'java_banner.png', b'1'),
+(2, 'Lập Trình Web', 'WEB', 'web_banner.png', b'1'),
+(3, 'Cơ Sở Dữ Liệu', 'DATABASE', 'db_banner.png', b'1');
 
--- Dump completed on 2026-10-06 20:59:24
+-- 3.3. Dữ liệu bảng `Videos`
+INSERT INTO `Videos` (`VideoId`, `Title`, `Poster`, `Views`, `Description`, `Active`, `CategoryId`, `Price`) VALUES
+('VID01', 'Hướng dẫn Servlet và JSP cơ bản', 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&auto=format&fit=crop&q=60', 1515, 'Video hướng dẫn nhập môn xây dựng web với Java Servlet và JSP.', b'1', 1, 150000.00),
+('VID02', 'Kết nối CSDL MySQL với JDBC', 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=500&auto=format&fit=crop&q=60', 2306, 'Cách thiết lập kết nối JDBC và thao tác CRUD trên MySQL.', b'1', 1, 150000.00),
+('VID03', 'Xây dựng kiến trúc MVC trong Java Web', 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=500&auto=format&fit=crop&q=60', 1852, 'Tổ chức mã nguồn theo mô hình 3 lớp Controller, Service, DAO.', b'1', 1, 150000.00),
+('VID04', 'Cấu hình SiteMesh Decorator cho JSP', 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500&auto=format&fit=crop&q=60', 923, 'Hướng dẫn sử dụng thư viện SiteMesh 3 để trang trí layout trang web.', b'1', 1, 150000.00),
+('VID05', 'Thiết kế giao diện Web Responsive với CSS', 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=500&auto=format&fit=crop&q=60', 3101, 'Tạo giao diện tương thích trên nhiều màn hình thiết bị.', b'1', 2, 150000.00),
+('VID06', 'Tối ưu hóa truy vấn SQL Server và MySQL', 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=500&auto=format&fit=crop&q=60', 1201, 'Các mẹo đánh chỉ mục Index và tối ưu hóa câu truy vấn phức tạp.', b'1', 3, 150000.00),
+('VID07', 'Xây dựng RESTful API với Spring Boot', 'https://images.unsplash.com/photo-1607799279861-4dd421887fb3?w=500&auto=format&fit=crop&q=60', 4200, 'Hướng dẫn thiết kế API chuẩn RESTful sử dụng Spring Boot và Hibernate.', b'1', 1, 150000.00),
+('VID08', 'Quản lý Transaction trong Spring Framework', 'https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=500&auto=format&fit=crop&q=60', 1650, 'Tìm hiểu cơ chế @Transactional và quản lý phiên làm việc trong Java.', b'1', 1, 150000.00),
+('VID09', 'Lập trình JavaScript ES6 hiện đại', 'https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?w=500&auto=format&fit=crop&q=60', 5100, 'Các tính năng mới trong ES6: Arrow functions, Promises, Async/Await.', b'1', 2, 150000.00),
+('VID10', 'Frontend cơ bản với HTML5 và CSS3', 'https://images.unsplash.com/photo-1523437113738-bbd3cc89fb19?w=500&auto=format&fit=crop&q=60', 2890, 'Khóa học nền tảng xây dựng cấu trúc và định dạng trang web.', b'1', 2, 150000.00),
+('VID11', 'Thiết kế chuẩn hóa cơ sở dữ liệu (1NF đến 3NF)', 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=500&auto=format&fit=crop&q=60', 3400, 'Phương pháp phân tích và chuẩn hóa bảng dữ liệu chống trùng lặp.', b'1', 3, 150000.00),
+('VID12', 'Viết Stored Procedure và Trigger trong SQL', 'https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=500&auto=format&fit=crop&q=60', 2150, 'Hướng dẫn tự động hóa xử lý logic nghiệp vụ ngay tại tầng cơ sở dữ liệu.', b'1', 3, 150000.00);
+
+-- 3.4. Dữ liệu bảng `Favorites`
+INSERT INTO `Favorites` (`FavoriteId`, `LikedDate`, `VideoId`, `Username`) VALUES
+(1, '2026-09-10', 'VID01', 'user01'),
+(2, '2026-09-12', 'VID01', 'user02'),
+(3, '2026-09-15', 'VID01', 'user03'),
+(4, '2026-09-18', 'VID02', 'user01'),
+(5, '2026-09-20', 'VID03', 'user04');
+
+-- 3.5. Dữ liệu bảng `Shares`
+INSERT INTO `Shares` (`ShareId`, `Emails`, `SharedDate`, `Username`, `VideoId`) VALUES
+(1, 'friend1@example.com', '2026-09-11', 'user01', 'VID01'),
+(2, 'friend2@example.com', '2026-09-13', 'user02', 'VID01'),
+(3, 'colleague@example.com', '2026-09-16', 'user01', 'VID02'),
+(4, 'classmate@example.com', '2026-09-21', 'user03', 'VID03');
+
+-- 3.6. Dữ liệu bảng `Orders`
+INSERT INTO `Orders` (`OrderId`, `Username`, `OrderDate`, `Fullname`, `Phone`, `Address`, `Note`, `TotalAmount`, `PaymentMethod`, `Status`) VALUES
+(1, 'admin', '2026-10-05 09:19:59', 'Quản Trị Viên', '0901234567', '988 Phạm Văn Đồng', 'giao ở quán ăn kế bên', 450000.00, 'COD', 'Pending (COD)'),
+(2, 'admin', '2026-10-05 09:22:23', 'Quản Trị Viên', '0901234567', '988 Phạm văn đồng', 'abc', 1350000.00, 'COD', 'Pending (COD)'),
+(3, 'trung', '2026-10-05 09:33:07', 'Phan Ngọc Trung', '0343089214', '988 Phạm Văn Đồng', 'bên quán cơm trưa', 300000.00, 'COD', 'Pending (COD)');
+
+-- 3.7. Dữ liệu bảng `OrderDetails`
+INSERT INTO `OrderDetails` (`OrderDetailId`, `OrderId`, `VideoId`, `Quantity`, `Price`) VALUES
+(1, 1, 'VID01', 2, 150000.00),
+(2, 1, 'VID05', 1, 150000.00),
+(3, 2, 'VID01', 9, 150000.00),
+(4, 3, 'VID01', 2, 150000.00);
+
+COMMIT;
