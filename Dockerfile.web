@@ -1,5 +1,5 @@
 # ==============================================================================
-# Dockerfile dành riêng cho Web App (Tomcat 10.1 kết nối MySQL ngoài/Docker network)
+# Dockerfile Web App (Tomcat 10.1 ket noi MySQL ngoai)
 # ==============================================================================
 FROM maven:3.9.9-eclipse-temurin-21 AS build
 
@@ -18,8 +18,11 @@ LABEL description="Standalone Tomcat 10.1 Web Container for KTGiuaKi"
 
 RUN rm -rf /usr/local/tomcat/webapps/*
 
+# Chi mot WAR duy nhat, truy cap tai /
 COPY --from=build /app/target/KTGiuaKi-1.1.war /usr/local/tomcat/webapps/ROOT.war
-COPY --from=build /app/target/KTGiuaKi-1.1.war /usr/local/tomcat/webapps/KTGiuaKi.war
+
+# Gioi han RAM cho goi Free 512MB
+ENV CATALINA_OPTS="-Xms64m -Xmx256m -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC -Xss512k"
 
 EXPOSE 8080
 
